@@ -15,7 +15,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         let window = UIWindow()
-        window.rootViewController = PokemonTableViewController()
+        let viewModel = PokemonTableModelView(networkingService: NetworkingApi())
+        let viewController = PokemonTableViewController(viewModel: viewModel)
+                                                        
+        window.rootViewController = UINavigationController(rootViewController: viewController)
         
         window.makeKeyAndVisible()
         self.window = window

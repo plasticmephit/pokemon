@@ -8,22 +8,34 @@
 import UIKit
 
 class PokemonTableViewController: UIViewController {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .yellow
-        // Do any additional setup after loading the view.
+    private let viewModel: PokemonTableModelView
+      
+      private let tableView = UITableView()
+    
+      private var data: Page?
+      
+      init(viewModel: PokemonTableModelView) {
+          self.viewModel = viewModel
+          super.init(nibName: nil, bundle: nil)
+      }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupViewModel()
     }
-    */
-
+    
+    override func viewWillAppear(_ animated: Bool) {
+           super.viewWillAppear(animated)
+           viewModel.ready()
+       }
+    private func setupViewModel() {
+        viewModel.isRefreshed.bind({ (isRefreshed) in
+            
+            self.data = self.viewModel.repos
+        })
+    }
 }
