@@ -19,7 +19,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         coordinator = TableCoordinator(navigationController: navController)
         coordinator?.start()
         window.rootViewController = navController
-        
         window.makeKeyAndVisible()
         self.window = window
         return true

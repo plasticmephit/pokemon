@@ -24,8 +24,9 @@ class TableCoordinator: Coordinator {
         navigationController.pushViewController(viewController, animated: true)
     }
     func showDetail(details: PokemonTable) {
-        let vc = PokemonDetailsViewController()
+        
         let viewModel = PokemonDetailsModelView(networkingService: NetworkingDetailsApi())
+        let vc = PokemonDetailsViewController(viewModel: viewModel)
         viewModel.detailsPokemon = details
         viewModel.coordinator = self
         vc.viewModel = viewModel

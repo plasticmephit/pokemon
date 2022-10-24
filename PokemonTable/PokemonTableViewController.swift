@@ -7,13 +7,15 @@
 
 import UIKit
 import SnapKit
-class PokemonTableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+import PaginatedTableView
+class PokemonTableViewController: UIViewController, PaginatedTableViewDelegate, PaginatedTableViewDataSource {
     
     private let viewModel: PokemonTableModelView
     
-    private var data: Page?
+    //    private var data: Page?
+    private var pokemons: [PokemonTable]?
     
-    let tableView: UITableView = .init()
+    let tableView: PaginatedTableView = .init()
     
     init(viewModel: PokemonTableModelView) {
         self.viewModel = viewModel
@@ -27,19 +29,20 @@ class PokemonTableViewController: UIViewController, UITableViewDataSource, UITab
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
-        tableView.dataSource = self
-        tableView.delegate = self
+        tableView.paginatedDelegate = self
+        tableView.paginatedDataSource = self
         setupView()
         setupViewModel()
+        viewModel.ready()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.ready()
+        
     }
     private func setupViewModel() {
         viewModel.isRefreshed.bind({ (isRefreshed) in
-            self.data = self.viewModel.repos
+            self.pokemons = self.viewModel.repos?.results
             DispatchQueue.main.async { [self] in
                 tableView.reloadData()
             }
@@ -50,16 +53,38 @@ class PokemonTableViewController: UIViewController, UITableViewDataSource, UITab
 extension PokemonTableViewController{
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return data?.results?.count ?? 5
+        return pokemons?.count ?? 5
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath as IndexPath)
-        cell.textLabel?.text = data?.results?[indexPath.row].name
+        cell.textLabel?.text = pokemons?[indexPath.row].name
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        viewModel.didSelectRow(at: indexPath)
+        
+        viewModel.didSelectRow(at: (pokemons?[indexPath.row])!)
+    }
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 50
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    func loadMore(_ pageNumber: Int, _ pageSize: Int, onSuccess: ((Bool) -> Void)?, onError: ((Error) -> Void)?) {
+        viewModel.next()
+        
+            viewModel.isRefreshedPage.bind({ [self] (isRefreshed) in
+                if pokemons![pokemons!.count-1].name != viewModel.repos?.results?[19].name{
+                    for number in 0...(self.viewModel.repos?.results!.count)!-1 {
+                        self.pokemons?.append((self.viewModel.repos?.results?[number])!)
+                    }
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now()+2) {
+                    onSuccess?(true)
+                }
+            })
     }
 }
 

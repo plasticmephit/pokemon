@@ -10,9 +10,9 @@ import UIKit
 struct Page: Decodable
 {
     let count:Int?
-    let next: URL?
-    let previous: URL?
-    let results:[PokemonTable]?
+    var next: URL?
+    var previous: URL?
+    var results:[PokemonTable]?
 }
 
 struct PokemonTable:Decodable

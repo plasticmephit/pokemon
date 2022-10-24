@@ -24,8 +24,8 @@ class PokemonDetailsModelView {
         let queueConc = DispatchQueue(label: "json", attributes: .concurrent)
         let group = DispatchGroup()
         group.enter()
-        queueConc.async {
-            self.networkingService.loadDataDetails
+        queueConc.async { [self] in
+            networkingService.loadDataDetails(url: (detailsPokemon?.url)!)
             { data, error in
                 self.finishSearching(with: data!)
             }
@@ -38,6 +38,5 @@ class PokemonDetailsModelView {
            isRefreshing?(false)
         self.repos = repos
            isRefreshed.value = true
-        
        }
 }
