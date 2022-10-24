@@ -1,22 +1,21 @@
 //
-//  PokemonTableModelView.swift
+//  PokemonViewModel.swift
 //  pokemon
 //
-//  Created by Maksimilian on 23.10.22.
+//  Created by Maksimilian on 24.10.22.
 //
 
 import Foundation
-class PokemonTableModelView {
+class PokemonDetailsModelView {
     var isRefreshing: ((Bool) -> Void)?
     var isRefreshed = Dynamic(false)
     var didUpdateRepos: ((Page) -> Void)?
-    var didSelecteRepo: ((String) -> Void)?
-    var repos:Page?
+    var repos:PokemonDetails?
+    var detailsPokemon:PokemonTable?
     var coordinator: TableCoordinator?
-    
-    private let networkingService: NetworkingService
+    private let networkingService: NetworkingDetailsService
         
-        init(networkingService: NetworkingService) {
+        init(networkingService: NetworkingDetailsService) {
             self.networkingService = networkingService
         }
     
@@ -26,7 +25,8 @@ class PokemonTableModelView {
         let group = DispatchGroup()
         group.enter()
         queueConc.async {
-            self.networkingService.loadDataPage { data, error in
+            self.networkingService.loadDataDetails
+            { data, error in
                 self.finishSearching(with: data!)
             }
             group.leave()
@@ -34,14 +34,10 @@ class PokemonTableModelView {
         
     }
     
-    private func finishSearching(with repos: Page) {
+    private func finishSearching(with repos: PokemonDetails) {
            isRefreshing?(false)
         self.repos = repos
            isRefreshed.value = true
         
-       }
-    
-    func didSelectRow(at indexPath: IndexPath) {
-        coordinator?.showDetail(details: (repos?.results![indexPath.row])!)
        }
 }
