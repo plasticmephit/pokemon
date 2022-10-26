@@ -22,7 +22,8 @@ final class NetworkingApi: NetworkingService {
                     let json = try JSONDecoder().decode(Page.self, from: data)
                     let encoder = JSONEncoder()
                     if let encoded = try? encoder.encode(json) {
-                        defaults.set(encoded, forKey: try! String(contentsOf: url))
+                        defaults.set(encoded, forKey: url.absoluteString)
+                        print(url.absoluteString)
                     }
                     completion(json, nil)
                     

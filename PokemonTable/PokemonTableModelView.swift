@@ -28,16 +28,21 @@ class PokemonTableModelView {
                                                object: nil,
                                                queue: nil,
                                                using:catchNotificationNetwork)
-        if let savedPerson = defaults.object(forKey: "SavedPerson") as? Data {
-            let decoder = JSONDecoder()
-            if let loadedPerson = try? decoder.decode(Page.self, from: savedPerson) {
-                print(loadedPerson.results)
+        let queueConc = DispatchQueue(label: "json1", attributes: .concurrent)
+        let group = DispatchGroup()
+        group.enter()
+        queueConc.async { [self] in
+            if let savedPerson = defaults.object(forKey: "https://pokeapi.co/api/v2/pokemon") as? Data {
+                let decoder = JSONDecoder()
+                if let loadedPerson = try? decoder.decode(Page.self, from: savedPerson) {
+                    finishSearching(with: loadedPerson)
+                    group.leave()
+                    //                print(loadedPerson.results)
+                }
             }
         }
-        let queueConc = DispatchQueue(label: "json", attributes: .concurrent)
-        let group = DispatchGroup()
+        group.enter()
         if NetworkMonitor.shared.isConnected{
-            group.enter()
             queueConc.async {
                 self.networkingService.loadDataPage(url: URL(string: "https://pokeapi.co/api/v2/pokemon")!) { data, error in
                     if data != nil{
@@ -47,32 +52,38 @@ class PokemonTableModelView {
                 group.leave()
             }
         }
-        else{
-            if let savedPerson = defaults.object(forKey: "SavedPerson") as? Data {
-                let decoder = JSONDecoder()
-                if let loadedPerson = try? decoder.decode(Page.self, from: savedPerson) {
-                    print(loadedPerson.results)
-                }
-            }
-        }
     }
     func next() {
+        
         isRefreshedPage.value = false
         isRefreshing?(true)
+        let urlString = (repos?.next?.absoluteString)
         let queueConc = DispatchQueue(label: "json", attributes: .concurrent)
         let group = DispatchGroup()
-        if NetworkMonitor.shared.isConnected{
-            group.enter()
-            queueConc.async {
-                self.networkingService.loadDataPage(url: (self.repos?.next) ?? URL(string: "https://pokeapi.co/api/v2/pokemon")!  ) { [self] data, error in
-                    if data != nil{
-                        self.finishSearchingPage(with: data!)
+        group.enter()
+        queueConc.async { [self] in
+            if let savedPerson = defaults.object(forKey: urlString ?? "https://pokeapi.co/api/v2/pokemon") as? Data {
+                let decoder = JSONDecoder()
+                if let loadedPerson = try? decoder.decode(Page.self, from: savedPerson) {
+                    finishSearchingPage(with: loadedPerson)
+                    group.leave()
+                    //                print(loadedPerson.results)
+                }
+            }
+            else{
+                if NetworkMonitor.shared.isConnected{
+                    group.enter()
+                    queueConc.async {
+                        self.networkingService.loadDataPage(url: (self.repos?.next) ?? URL(string: "https://pokeapi.co/api/v2/pokemon")!  ) { [self] data, error in
+                            if data != nil{
+                                self.finishSearchingPage(with: data!)
+                            }
+                        }
+                        group.leave()
                     }
                 }
-                group.leave()
             }
         }
-        
     }
     private func finishSearchingPage(with repos: Page) {
         isRefreshing?(false)
