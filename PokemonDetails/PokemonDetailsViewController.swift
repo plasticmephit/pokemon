@@ -48,9 +48,9 @@ class PokemonDetailsViewController: UIViewController {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
-        viewModel.ready()
         setupview()
         setupViewModel()
+        viewModel.ready()
         // Do any additional setup after loading the view.
     }
 }
@@ -70,10 +70,12 @@ extension PokemonDetailsViewController {
     }
     private func setupViewModel() {
         viewModel.isRefreshed.bind({ (isRefreshed) in
-            self.data = self.viewModel.repos
-            DispatchQueue.main.async { [self] in
-                name.text = data?.name
-                mainNumber.text = String((data?.height)!)
+           if isRefreshed{
+                self.data = self.viewModel.repos
+                DispatchQueue.main.async { [self] in
+                    name.text = data?.name
+                    mainNumber.text = String((data?.height)!)
+                }
             }
         })
     }

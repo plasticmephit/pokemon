@@ -6,17 +6,17 @@
 //
 
 import Foundation
-struct PokemonDetails:Decodable{
+struct PokemonDetails:Codable{
     let name:String?
     let height:Int?
     let weight:Int?
     let sprites: Sprites?
     let types:[Types]
 }
-struct Sprites:Decodable{
+struct Sprites:Codable{
     let front_shiny:URL
 }
-struct Types:Decodable{
+struct Types:Codable{
     let name:String?
     let url: URL?
 }

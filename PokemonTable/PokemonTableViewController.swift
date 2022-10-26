@@ -44,9 +44,11 @@ class PokemonTableViewController: UIViewController, PaginatedTableViewDelegate, 
     }
     private func setupViewModel() {
         viewModel.isRefreshed.bind({ (isRefreshed) in
-            self.pokemons = self.viewModel.repos?.results
-            DispatchQueue.main.async { [self] in
-                tableView.reloadData()
+            if isRefreshed{
+                self.pokemons = self.viewModel.repos?.results
+                DispatchQueue.main.async { [self] in
+                    tableView.reloadData()
+                }
             }
         })
     }

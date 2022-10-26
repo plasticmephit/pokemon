@@ -21,6 +21,11 @@ final class NetworkingDetailsApi: NetworkingDetailsService {
             do {
                 if let data = data {
                     let json = try JSONDecoder().decode(PokemonDetails.self, from: data)
+                    let encoder = JSONEncoder()
+                    if let encoded = try? encoder.encode(json) {
+                        defaults.set(encoded, forKey: url.absoluteString)
+                        print(url.absoluteString)
+                    }
                     completion(json, nil)
                     
                 } else {

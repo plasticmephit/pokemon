@@ -21,22 +21,34 @@ class PokemonDetailsModelView {
     
     func ready() {
         isRefreshing?(true)
+        isRefreshed.value = false
         NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: NSNotification.Name.connectivityStatus.rawValue),
                                                object: nil,
                                                queue: nil,
                                                using:catchNotificationNetwork)
-        let queueConc = DispatchQueue(label: "json", attributes: .concurrent)
+        let queueConc = DispatchQueue(label: "json2", attributes: .concurrent)
         let group = DispatchGroup()
-        if NetworkMonitor.shared.isConnected{
-            group.enter()
-            queueConc.async { [self] in
-                networkingService.loadDataDetails(url: (detailsPokemon?.url)!)
-                { data, error in
-                    if data != nil{
-                        self.finishSearching(with: data!)
-                    }
+        group.enter()
+        queueConc.async { [self] in
+            if let savedPerson = defaults.object(forKey: (detailsPokemon?.url?.absoluteString)!) as? Data {
+                let decoder = JSONDecoder()
+                if let loadedPerson = try? decoder.decode(PokemonDetails.self, from: savedPerson) {
+                    finishSearching(with: loadedPerson)
+                    print(detailsPokemon?.url?.absoluteString)
+                    group.leave()
+                    //                print(loadedPerson.results)
                 }
-                group.leave()
+            }
+            else{
+                if NetworkMonitor.shared.isConnected{
+                   
+                        self.networkingService.loadDataDetails(url: (detailsPokemon?.url)!  ) { [self] data, error in
+                            if data != nil{
+                                self.finishSearching(with: data!)
+                            }
+                    }
+                    group.leave()
+                }
             }
         }
     }
