@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import PaginatedTableView
+import SystemConfiguration
 class PokemonTableViewController: UIViewController, PaginatedTableViewDelegate, PaginatedTableViewDataSource {
     
     private let viewModel: PokemonTableModelView
@@ -34,6 +35,7 @@ class PokemonTableViewController: UIViewController, PaginatedTableViewDelegate, 
         setupView()
         setupViewModel()
         viewModel.ready()
+        alert()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -74,17 +76,10 @@ extension PokemonTableViewController{
     }
     func loadMore(_ pageNumber: Int, _ pageSize: Int, onSuccess: ((Bool) -> Void)?, onError: ((Error) -> Void)?) {
         viewModel.next()
-        
-            viewModel.isRefreshedPage.bind({ [self] (isRefreshed) in
-                if pokemons![pokemons!.count-1].name != viewModel.repos?.results?[19].name{
-                    for number in 0...(self.viewModel.repos?.results!.count)!-1 {
-                        self.pokemons?.append((self.viewModel.repos?.results?[number])!)
-                    }
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now()+2) {
-                    onSuccess?(true)
-                }
-            })
+        pagination()
+        DispatchQueue.main.asyncAfter(deadline: .now()+0.5) {
+            onSuccess?(true)
+        }
     }
 }
 
@@ -101,5 +96,35 @@ extension PokemonTableViewController{
             make.top.equalToSuperview().inset(15)
             make.bottom.equalToSuperview().inset(20)
         }
+    }
+    func pagination(){
+        viewModel.isRefreshedPage.bind({ [self] (isRefreshed) in
+            if pokemons != nil {
+                if pokemons![pokemons!.count-1].name != viewModel.repos?.results?[(viewModel.repos?.results!.count)!-1].name{
+                    for number in 0...(self.viewModel.repos?.results!.count)!-1 {
+                        self.pokemons?.append((self.viewModel.repos?.results?[number])!)
+                    }
+                }
+            }
+        })
+    }
+    func alert(){
+        viewModel.networkStatus.bind({ [self] (networkStatus) in
+            print(networkStatus)
+            if networkStatus == false{
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Internet Connection", message: "Lost", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
+                 
+                    }))
+                    self.present(alert, animated: true, completion: nil)
+                }
+            }
+            else {
+                if pokemons == nil{
+                    viewModel.ready()
+                }
+            }
+        })
     }
 }

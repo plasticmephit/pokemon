@@ -7,7 +7,7 @@
 
 import Foundation
 import UIKit
-struct Page: Decodable
+struct Page: Codable
 {
     let count:Int?
     var next: URL?
@@ -15,7 +15,7 @@ struct Page: Decodable
     var results:[PokemonTable]?
 }
 
-struct PokemonTable:Decodable
+struct PokemonTable:Codable
 {
     let name:String?
     let url: URL?

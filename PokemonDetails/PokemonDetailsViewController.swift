@@ -62,13 +62,18 @@ extension PokemonDetailsViewController {
             make.top.equalToSuperview().inset(48)
             make.left.right.equalToSuperview().inset(16)
         }
+        view.addSubview(mainNumber)
+        mainNumber.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(70)
+            make.left.right.equalToSuperview().inset(16)
+        }
     }
     private func setupViewModel() {
         viewModel.isRefreshed.bind({ (isRefreshed) in
             self.data = self.viewModel.repos
-            print(isRefreshed)
             DispatchQueue.main.async { [self] in
                 name.text = data?.name
+                mainNumber.text = String((data?.height)!)
             }
         })
     }
