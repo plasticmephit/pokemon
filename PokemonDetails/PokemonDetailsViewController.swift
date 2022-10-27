@@ -6,7 +6,7 @@
 //
 
 import UIKit
-
+import Kingfisher
 class PokemonDetailsViewController: UIViewController {
     
     let name : UILabel = {
@@ -17,22 +17,28 @@ class PokemonDetailsViewController: UIViewController {
         return label
     }()
    
-    let mainNumber : UILabel = {
+    let height : UILabel = {
         let label = UILabel()
-        label.textColor = UIColor(red: 0.435, green: 0.545, blue: 0.643, alpha: 1)
-        label.font = UIFont.systemFont(ofSize: 12)
-        return label
-    }()
-    
-    
-    let address : UILabel = {
-        let label = UILabel()
-        label.textColor = UIColor(red: 0.435, green: 0.545, blue: 0.643, alpha: 1)
-        label.font = UIFont.systemFont(ofSize: 12)
+        label.font = UIFont.systemFont(ofSize: UIScreen.main.bounds.height/35)
         label.lineBreakMode = .byWordWrapping
-        label.numberOfLines = 7
+        label.numberOfLines = 2
         return label
     }()
+    let type : UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: UIScreen.main.bounds.height/35)
+        label.lineBreakMode = .byWordWrapping
+        label.numberOfLines = 2
+        return label
+    }()
+    let weight : UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: UIScreen.main.bounds.height/35)
+        label.lineBreakMode = .byWordWrapping
+        label.numberOfLines = 2
+        return label
+    }()
+    var avatar = UIImageView()
     
     var viewModel: PokemonDetailsModelView
   
@@ -56,16 +62,42 @@ class PokemonDetailsViewController: UIViewController {
 }
 extension PokemonDetailsViewController {
     func setupview(){
+
+        let titleLabel = UILabel()
+        titleLabel.textColor = .black
+        titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 2
+        titleLabel.text = viewModel.detailsPokemon?.name
+        navigationItem.titleView = titleLabel
+        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
+        navigationController?.navigationBar.shadowImage = UIImage()
         view.backgroundColor = .white
+        view.addSubview(avatar)
+        avatar.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(100)
+            make.centerX.equalToSuperview()
+            make.width.equalTo(300)
+            make.height.equalTo(300)
+        }
         view.addSubview(name)
         name.snp.makeConstraints { make in
-            make.top.equalToSuperview().inset(48)
-            make.left.right.equalToSuperview().inset(16)
+            make.bottom.equalTo(avatar.snp.top).inset(20)
+            make.centerX.equalToSuperview()
         }
-        view.addSubview(mainNumber)
-        mainNumber.snp.makeConstraints { make in
-            make.top.equalToSuperview().inset(70)
-            make.left.right.equalToSuperview().inset(16)
+        view.addSubview(height)
+        height.snp.makeConstraints { make in
+            make.top.equalTo(avatar.snp.bottom).offset(20)
+            make.left.equalTo(avatar.snp.left).inset(10)
+        }
+        view.addSubview(weight)
+        weight.snp.makeConstraints { make in
+            make.top.equalTo(height.snp.bottom).offset(20)
+            make.left.equalTo(avatar.snp.left).inset(10)
+        }
+        view.addSubview(type)
+        type.snp.makeConstraints { make in
+            make.top.equalTo(weight.snp.bottom).offset(20)
+            make.left.equalTo(avatar.snp.left).inset(10)
         }
     }
     private func setupViewModel() {
@@ -73,8 +105,21 @@ extension PokemonDetailsViewController {
            if isRefreshed{
                 self.data = self.viewModel.repos
                 DispatchQueue.main.async { [self] in
-                    name.text = data?.name
-                    mainNumber.text = String((data?.height)!)
+//                    name.text = data?.name
+                    var types:String = ""
+                    for num in 0...(data?.types!.count)!-1{
+                        if  data?.types![num].type?.name != nil{
+                            types =  types + String(((data?.types![num].type?.name)!)) + " and "
+                        }
+                    }
+                    types.removeLast(4)
+                    type.text = "types: " + types
+                    weight.text = "weight: " + String(((data?.weight)!))
+                    height.text = "height: " + String((data?.height)!)
+                    avatar.kf.setImage(with: data?.sprites?.front_shiny)
+                    UIView.animate(withDuration: 0.4) {
+                            self.view.layoutIfNeeded()
+                    }
                 }
             }
         })

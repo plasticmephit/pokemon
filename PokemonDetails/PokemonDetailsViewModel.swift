@@ -34,7 +34,6 @@ class PokemonDetailsModelView {
                 let decoder = JSONDecoder()
                 if let loadedPerson = try? decoder.decode(PokemonDetails.self, from: savedPerson) {
                     finishSearching(with: loadedPerson)
-                    print(detailsPokemon?.url?.absoluteString)
                     group.leave()
                     //                print(loadedPerson.results)
                 }

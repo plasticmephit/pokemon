@@ -11,12 +11,16 @@ struct PokemonDetails:Codable{
     let height:Int?
     let weight:Int?
     let sprites: Sprites?
-    let types:[Types]
+    let types: [Types]?
 }
 struct Sprites:Codable{
-    let front_shiny:URL
+    let front_shiny:URL?
 }
 struct Types:Codable{
-    let name:String?
+    let slot:Int?
+    let type: Typeone?
+}
+struct Typeone:Codable{
+    let name: String?
     let url: URL?
 }

@@ -12,10 +12,9 @@ import SystemConfiguration
 class PokemonTableViewController: UIViewController, PaginatedTableViewDelegate, PaginatedTableViewDataSource {
     
     private let viewModel: PokemonTableModelView
-    
-    //    private var data: Page?
     private var pokemons: [PokemonTable]?
     
+    let refreshControl = UIRefreshControl()
     let tableView: PaginatedTableView = .init()
     
     init(viewModel: PokemonTableModelView) {
@@ -32,6 +31,10 @@ class PokemonTableViewController: UIViewController, PaginatedTableViewDelegate, 
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         tableView.paginatedDelegate = self
         tableView.paginatedDataSource = self
+        tableView.enablePullToRefresh = false
+        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
+          refreshControl.addTarget(self, action: #selector(self.refresh(_:)), for: .valueChanged)
+          tableView.addSubview(refreshControl)
         setupView()
         setupViewModel()
         viewModel.ready()
@@ -76,10 +79,19 @@ extension PokemonTableViewController{
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+//        cell.alpha = 0
+//        UIView.animate(
+//            withDuration: 0.05,
+//            delay: 0.05 * Double(indexPath.row),
+//            animations: {
+//                cell.alpha = 1
+//        })
+    }
     func loadMore(_ pageNumber: Int, _ pageSize: Int, onSuccess: ((Bool) -> Void)?, onError: ((Error) -> Void)?) {
         viewModel.next()
         pagination()
-        DispatchQueue.main.asyncAfter(deadline: .now()+0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now()) {
             onSuccess?(true)
         }
     }
@@ -87,6 +99,15 @@ extension PokemonTableViewController{
 
 extension PokemonTableViewController{
     func setupView(){
+        let titleLabel = UILabel()
+        titleLabel.textColor = .black
+        titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 1
+        titleLabel.text = "Pokemons"
+        navigationItem.titleView = titleLabel
+        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
+        navigationController?.navigationBar.shadowImage = UIImage()
+        view.backgroundColor = .white
         view.backgroundColor = .white
         view.addSubview(tableView)
         tableView.rowHeight = 60
@@ -109,6 +130,15 @@ extension PokemonTableViewController{
                 }
             }
         })
+    }
+    @objc func refresh(_ sender: AnyObject) {
+        pokemons = nil
+        viewModel.refresh()
+        DispatchQueue.main.async { [self] in
+            tableView.reloadData()
+            refreshControl.endRefreshing()
+        }
+      
     }
     func alert(){
         viewModel.networkStatus.bind({ [self] (networkStatus) in

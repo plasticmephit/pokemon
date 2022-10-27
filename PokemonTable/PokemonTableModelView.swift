@@ -24,14 +24,23 @@ class PokemonTableModelView {
     
     func ready() {
         isRefreshing?(true)
+        isRefreshed.value = false
         NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: NSNotification.Name.connectivityStatus.rawValue),
                                                object: nil,
                                                queue: nil,
                                                using:catchNotificationNetwork)
        loadvalues(url: "https://pokeapi.co/api/v2/pokemon", refrashing: isRefreshed)
     }
+    func refresh(){
+        repos = nil
+            let dictionary = defaults.dictionaryRepresentation()
+            dictionary.keys.forEach { key in
+                defaults.removeObject(forKey: key)
+            }
+        ready()
+    }
+    
     func next() {
-        
         isRefreshedPage.value = false
         isRefreshing?(true)
         let urlString = (repos?.next?.absoluteString)
@@ -62,7 +71,7 @@ class PokemonTableModelView {
                    
                         self.networkingService.loadDataPage(url: URL(string: url)!  ) { [self] data, error in
                             if data != nil{
-                                self.finishSearching(with: data!, refrashing: isRefreshed)
+                                self.finishSearching(with: data!, refrashing: refrashing)
                             }
                             group.leave()
                     }
